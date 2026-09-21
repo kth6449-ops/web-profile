@@ -1,4 +1,4 @@
-# web-profile — 김태현 소개 페이지 배포 프로젝트
+# web-profile — 김태현 소개 웹페이지 만들기 프로젝트
 
 개인 소개 페이지를 html로 구현, Vercel에 배포하고,
 프로필 정보를 돌려주는 FastAPI 백엔드를 Render에 배포해, 프론트엔드에서
