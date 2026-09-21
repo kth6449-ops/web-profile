@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>프론트엔드·백엔드 연동 실습 | Taehyun Kim</title>
+<meta name="description" content="Vercel에 배포한 자기소개 페이지에서 Render에 배포한 FastAPI 프로필 API를 호출하는 연동 실습 페이지.">
+<style>
+:root{
+  --ink:#183946;--muted:#4d6570;--paper:#f3f6f5;--line:#cad9dd;--accent:#176b78;--lime:#d9ecea;
+  --font-ui:"Malgun Gothic","Apple SD Gothic Neo","Noto Sans CJK KR",sans-serif;
+  --text-small:.875rem;--text-body:1rem;--text-card:1.25rem;--text-section:2rem;
+  --weight-body:400;--weight-ui:600;--weight-title:700;--leading-body:1.75;--leading-heading:1.4;
+  --header:82px;color-scheme:light
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;font-size:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--font-ui);font-size:var(--text-body);font-weight:var(--weight-body);line-height:var(--leading-body);word-break:keep-all;overflow-wrap:anywhere}
+a{color:inherit;text-decoration:none}
+a,button,summary{-webkit-tap-highlight-color:transparent}
+a:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-offset:4px}
+p,h1,h2,h3{margin:0}p{color:var(--muted)}
+button{font-family:inherit;font-size:var(--text-body);line-height:1.5}
+h1,h2,h3{font-weight:var(--weight-title);line-height:var(--leading-heading);letter-spacing:-.02em}
+.wrap{max-width:1180px;margin:auto;padding:0 40px}
+.skip{position:fixed;left:15px;top:-90px;z-index:50;background:#fff;padding:12px}
+.skip:focus{top:12px}
+
+.top{position:sticky;top:0;z-index:20;background:rgba(245,248,247,.96);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.nav-wrap{min-height:82px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+.brand{font-size:1rem;font-weight:var(--weight-title);letter-spacing:.02em;white-space:nowrap}
+.brand span{color:var(--accent)}
+.back{font-size:var(--text-small);font-weight:var(--weight-ui);color:var(--muted);border-bottom:2px solid transparent;padding:25px 0}
+.back:hover{color:var(--accent);border-color:var(--accent)}
+
+.head{padding:72px 0 44px;border-bottom:1px solid var(--line)}
+.eyebrow{font-size:var(--text-small);font-weight:var(--weight-ui);letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+.head h1{font-size:clamp(2rem,4.2vw,2.75rem);letter-spacing:-.035em;margin:16px 0 18px;line-height:1.25}
+.head p{max-width:720px;text-wrap:pretty}
+.head .meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:26px}
+.head .meta span{background:#e6edec;color:#3b5a61;padding:4px 11px;border-radius:3px;font-size:var(--text-small)}
+
+section.block{padding:56px 0;border-bottom:1px solid var(--line)}
+section.block>h2{font-size:var(--text-section);margin-bottom:10px}
+section.block>.lead{max-width:760px;margin-bottom:30px;text-wrap:pretty}
+
+figure{margin:0}
+figure svg{display:block;width:100%;max-width:880px;height:auto;color:var(--ink)}
+figcaption{font-size:var(--text-small);color:var(--muted);margin-top:14px;line-height:1.7;max-width:760px}
+
+.panel{background:#fff;border:1px solid var(--line);border-radius:5px;padding:28px}
+.state{display:flex;align-items:center;gap:11px;padding-bottom:17px;margin-bottom:19px;border-bottom:1px solid var(--line);font-size:var(--text-small);color:var(--muted);line-height:1.6}
+.dot{width:9px;height:9px;flex:0 0 9px;border-radius:50%;background:#c3ced1;transition:background .3s}
+.dot.is-wait{background:#c99a3a}.dot.is-ok{background:#3d9a6b}.dot.is-err{background:#bd5f40}
+.calls{display:flex;flex-wrap:wrap;gap:9px;margin-bottom:19px}
+.calls button{display:inline-flex;align-items:center;gap:9px;padding:11px 16px;border:1px solid var(--ink);border-radius:4px;background:#fff;color:var(--ink);cursor:pointer;font-size:var(--text-small);font-weight:var(--weight-ui);transition:background .2s,color .2s,border-color .2s}
+.calls button:hover:not(:disabled){background:var(--accent);color:#fff;border-color:var(--accent)}
+.calls button:disabled{opacity:.4;cursor:default}
+.calls .verb{font-size:.6875rem;letter-spacing:.06em;color:var(--accent)}
+.calls button:hover:not(:disabled) .verb{color:#d9ecea}
+.out{margin:0;padding:19px 20px;background:#13272f;color:#dde9e6;border-radius:4px;font-family:ui-monospace,"Cascadia Code",Consolas,monospace;font-size:.8125rem;line-height:1.75;white-space:pre-wrap;overflow-wrap:anywhere;min-height:150px;max-height:380px;overflow:auto}
+.out b{color:#d5f477;font-weight:var(--weight-ui)}
+.note{margin-top:17px;padding:14px 18px;background:#eaf1ee;border-left:3px solid #7fa9a2;border-radius:0 4px 4px 0}
+.note p{color:var(--ink);font-size:var(--text-small);line-height:1.7}
+
+table{width:100%;border-collapse:collapse;font-size:var(--text-small)}
+th,td{padding:11px 10px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--accent);font-weight:var(--weight-ui);background:#edf2f1}
+td code{font-family:ui-monospace,Consolas,monospace;font-size:.95em;background:#edf1f1;color:#2b545c;padding:2px 6px;border-radius:3px}
+.verb-cell{font-weight:var(--weight-ui);color:var(--accent);white-space:nowrap}
+
+.links{display:flex;flex-wrap:wrap;gap:10px;margin-top:28px}
+.button{display:inline-flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 18px;border:1px solid var(--ink);border-radius:4px;font-size:var(--text-small);font-weight:var(--weight-ui);transition:background .2s,color .2s,border-color .2s}
+.button.primary{background:var(--ink);color:#fff}
+.button:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+footer{padding:34px 0 48px;color:var(--muted);font-size:var(--text-small)}
+.foot{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
+footer a{color:var(--accent)}
+
+@media(max-width:850px){.wrap{padding:0 26px}.head{padding:52px 0 36px}}
+@media(max-width:650px){
+  .wrap{padding:0 22px}
+  :root{--text-section:1.6rem}
+  .head h1{font-size:1.9rem}
+  .panel{padding:22px 18px}
+  .calls button{flex:1 1 100%;justify-content:flex-start}
+  section.block{padding:42px 0}
+  table{font-size:.8125rem}
+}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+@media print{.top,.calls,.links,.skip{display:none!important}.wrap{max-width:none;padding:0}}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">본문으로 이동</a>
+
+<header class="top"><div class="wrap nav-wrap">
+<a class="brand" href="index.html" aria-label="김태현 소개 페이지로">TAEHYUN KIM<span>.</span></a>
+<a class="back" href="index.html">← 소개 페이지로 돌아가기</a>
+</div></header>
+
+<main class="wrap" id="main">
+
+<div class="head">
+<div class="eyebrow">클라우드컴퓨팅 실습 · 개인과제</div>
+<h1>프론트엔드·백엔드 연동 실습</h1>
+<p>지금 보고 계신 이 페이지는 <strong>Vercel</strong>에 올라간 HTML 파일입니다. 제 프로필 정보를 돌려주는 FastAPI 서버는 <strong>Render</strong>에 따로 올라가 있습니다. 아래 버튼을 누르면 이 브라우저가 Render의 서버를 직접 호출하고, 돌아온 프로필 데이터를 그대로 보여줍니다.</p>
+<div class="meta"><span>Frontend · Vercel</span><span>Backend · FastAPI on Render</span><span>Docs · Swagger UI</span></div>
+</div>
+
+<section class="block">
+<h2>무엇이 어디에 있나</h2>
+<p class="lead">소개 페이지(<code>index.html</code>)의 내용은 고정된 HTML이고, 이 페이지는 같은 내용을 <strong>백엔드가 실시간으로 돌려주는지</strong> 확인합니다. 두 서비스는 서로 다른 도메인에 있어, 백엔드가 출처를 허용(CORS)해야만 호출이 통과합니다.</p>
+<figure>
+<svg viewBox="0 0 880 262" role="img" aria-label="브라우저가 Vercel에서 HTML을 한 번 받아 실행하고, 그 안의 fetch가 도메인 경계를 넘어 Render의 프로필 API를 호출하면 JSON이 돌아오는 흐름. 경계에서 CORS 허용이 없으면 응답이 막힌다.">
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+<path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+</marker>
+<marker id="ah-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+<path d="M0,0 L10,5 L0,10 z" fill="#176b78"/>
+</marker>
+</defs>
+
+<rect x="20" y="62" width="200" height="112" rx="4" fill="none" stroke="currentColor" stroke-width="1.5"/>
+<text x="36" y="88" font-size="11" letter-spacing="1" fill="#176b78">VERCEL</text>
+<text x="36" y="114" font-size="14" font-weight="700" fill="currentColor">정적 파일 저장·배달</text>
+<text x="36" y="138" font-size="12" fill="currentColor" opacity=".72">index.html</text>
+<text x="36" y="157" font-size="12" fill="currentColor" opacity=".72">api.html (이 페이지)</text>
+<text x="120" y="192" font-size="11" text-anchor="middle" fill="currentColor" opacity=".55">*.vercel.app</text>
+
+<rect x="330" y="38" width="220" height="160" rx="4" fill="none" stroke="currentColor" stroke-width="1.5"/>
+<text x="346" y="64" font-size="11" letter-spacing="1" fill="#176b78">내 브라우저</text>
+<text x="346" y="90" font-size="14" font-weight="700" fill="currentColor">HTML을 그리고</text>
+<text x="346" y="110" font-size="14" font-weight="700" fill="currentColor">JS를 실행</text>
+<rect x="346" y="128" width="188" height="52" rx="3" fill="none" stroke="currentColor" stroke-width="1" opacity=".4"/>
+<text x="358" y="149" font-size="11.5" fill="currentColor" opacity=".8">fetch(API_BASE</text>
+<text x="358" y="167" font-size="11.5" fill="currentColor" opacity=".8">&#160;&#160;&#160;+ "/api/profile")</text>
+
+<rect x="700" y="62" width="170" height="112" rx="4" fill="none" stroke="currentColor" stroke-width="1.5"/>
+<text x="716" y="88" font-size="11" letter-spacing="1" fill="#176b78">RENDER</text>
+<text x="716" y="114" font-size="14" font-weight="700" fill="currentColor">파이썬 실행·응답</text>
+<text x="716" y="138" font-size="12" fill="currentColor" opacity=".72">uvicorn app.main:app</text>
+<text x="716" y="157" font-size="12" fill="currentColor" opacity=".72">/docs · /api/profile</text>
+<text x="785" y="192" font-size="11" text-anchor="middle" fill="currentColor" opacity=".55">*.onrender.com</text>
+
+<line x1="222" y1="106" x2="326" y2="106" stroke="currentColor" stroke-width="1.5" marker-end="url(#ah)"/>
+<text x="274" y="97" font-size="11.5" text-anchor="middle" fill="currentColor">파일 전송</text>
+<text x="274" y="124" font-size="11" text-anchor="middle" fill="currentColor" opacity=".6">최초 1회</text>
+
+<line x1="552" y1="92" x2="696" y2="92" stroke="#176b78" stroke-width="1.75" marker-end="url(#ah-a)"/>
+<text x="556" y="83" font-size="11.5" fill="#176b78" font-weight="700">HTTP 요청</text>
+
+<line x1="696" y1="150" x2="552" y2="150" stroke="#176b78" stroke-width="1.75" marker-end="url(#ah-a)"/>
+<text x="694" y="170" font-size="11.5" text-anchor="end" fill="#176b78" font-weight="700">JSON 응답</text>
+
+<line x1="625" y1="30" x2="625" y2="196" stroke="#176b78" stroke-width="1.25" stroke-dasharray="4 4"/>
+<text x="625" y="220" font-size="12" font-weight="700" text-anchor="middle" fill="#176b78">도메인 경계</text>
+<text x="625" y="240" font-size="11.5" text-anchor="middle" fill="currentColor" opacity=".72">백엔드의 CORS 허용이 없으면 여기서 막힌다</text>
+</svg>
+<figcaption>Vercel은 파일을 한 번 배달하고 끝납니다. 이후 프로필 데이터 요청은 브라우저가 Render로 직접 보냅니다 — 두 서비스는 서로 통신하지 않고, 둘 사이를 잇는 것은 브라우저입니다. 도메인이 다르므로 백엔드의 CORS 설정이 없으면 이 요청은 응답을 받아도 화면에 도달하지 못합니다.</figcaption>
+</figure>
+</section>
+
+<section class="block">
+<h2>직접 호출해 보기</h2>
+<p class="lead">버튼을 누르면 실제 HTTP 요청이 나갑니다. 상태 코드와 응답 본문이 그대로 표시됩니다.</p>
+<div class="panel">
+<div class="state"><span class="dot" id="dot" aria-hidden="true"></span><span id="state-text" role="status" aria-live="polite">백엔드 서버를 깨우는 중입니다. 잠시만 기다려 주세요.</span></div>
+<div class="calls">
+<button type="button" data-call="health"><span class="verb">GET</span> 서버 상태</button>
+<button type="button" data-call="profile"><span class="verb">GET</span> 프로필</button>
+<button type="button" data-call="experience"><span class="verb">GET</span> 경력</button>
+<button type="button" data-call="education"><span class="verb">GET</span> 학력</button>
+<button type="button" data-call="notfound"><span class="verb">GET</span> 없는 경력 (404)</button>
+</div>
+<pre class="out" id="out">버튼을 누르면 요청과 응답이 이곳에 표시됩니다.</pre>
+<div class="note"><p>Render 무료 플랜은 15분간 요청이 없으면 서버가 잠듭니다. 첫 호출은 최대 1분까지 걸릴 수 있습니다 — 이 페이지는 열릴 때 서버를 미리 깨웁니다. 프로필 데이터는 코드에 담겨 있어 서버가 다시 깨어나도 그대로 유지됩니다.</p></div>
+</div>
+</section>
+
+<section class="block">
+<h2>백엔드가 제공하는 API</h2>
+<p class="lead">아래 경로는 FastAPI가 코드의 타입 힌트를 읽어 Swagger UI 문서로 자동 생성합니다. Swagger UI에서는 각 경로를 직접 실행해 볼 수 있습니다.</p>
+<table>
+<thead><tr><th>메서드</th><th>경로</th><th>설명</th><th>상태 코드</th></tr></thead>
+<tbody>
+<tr><td class="verb-cell">GET</td><td><code>/health</code></td><td>서버 상태 확인</td><td>200</td></tr>
+<tr><td class="verb-cell">GET</td><td><code>/api/profile</code></td><td>소개 정보 반환</td><td>200</td></tr>
+<tr><td class="verb-cell">GET</td><td><code>/api/experience</code></td><td>경력 전체 목록</td><td>200</td></tr>
+<tr><td class="verb-cell">GET</td><td><code>/api/experience/{id}</code></td><td>경력 단건 조회</td><td>200 · 404</td></tr>
+<tr><td class="verb-cell">GET</td><td><code>/api/education</code></td><td>학력 전체 목록</td><td>200</td></tr>
+</tbody>
+</table>
+<div class="links">
+<a class="button primary" id="docs-link" href="#" target="_blank" rel="noopener noreferrer">Swagger UI에서 직접 테스트 ↗</a>
+<a class="button" id="repo-link" href="#" target="_blank" rel="noopener noreferrer">GitHub 저장소 ↗</a>
+<a class="button" href="index.html">소개 페이지로 돌아가기</a>
+</div>
+</section>
+
+</main>
+
+<footer><div class="wrap foot">
+<span>© 2026 Taehyun Kim · 클라우드컴퓨팅 실습 개인과제</span>
+<a href="index.html">소개 페이지 →</a>
+</div></footer>
+
+<script>
+(()=>{
+/* ══════════════════════════════════════════════════════════════════
+   설정 — 이 두 줄만 본인 주소로 바꾸면 됩니다 (끝에 / 를 붙이지 않습니다)
+   ══════════════════════════════════════════════════════════════════ */
+const API_BASE = "http://127.0.0.1:8000";
+const REPO_URL = "https://github.com/kth6449-ops/web-profile";
+/* ════════════════════════════════════════════════════════════════ */
+
+const out     = document.getElementById('out');
+const dot     = document.getElementById('dot');
+const state   = document.getElementById('state-text');
+const buttons = [...document.querySelectorAll('[data-call]')];
+const ready   = !API_BASE.includes('REPLACE-ME');
+
+document.getElementById('docs-link').href = ready ? API_BASE + '/docs' : REPO_URL;
+document.getElementById('repo-link').href = REPO_URL;
+
+function setState(kind, text){
+  dot.className = 'dot' + (kind ? ' is-' + kind : '');
+  state.textContent = text;
+}
+function print(title, body){
+  out.innerHTML = '';
+  const head = document.createElement('b');
+  head.textContent = title;
+  out.append(head, '\n' + body);
+}
+const pretty = v => JSON.stringify(v, null, 2);
+
+async function run(method, path){
+  buttons.forEach(b => b.disabled = true);
+  setState('wait', '요청을 보내는 중입니다. 서버가 잠들어 있으면 최대 1분이 걸립니다.');
+  print(method + ' ' + path, '요청 중…');
+  const started = performance.now();
+  try {
+    const res = await fetch(API_BASE + path, { headers: { 'Accept': 'application/json' } });
+    const ms  = Math.round(performance.now() - started);
+    const text = await res.text();
+    let payload; try { payload = JSON.parse(text); } catch { payload = text; }
+    setState('ok', '백엔드가 응답했습니다. (' + ms + 'ms)');
+    print(method + ' ' + path,
+      '상태 코드: ' + res.status + ' ' + res.statusText + '  ·  응답 시간: ' + ms + 'ms\n\n' + pretty(payload));
+  } catch (e) {
+    setState('err', '백엔드에 연결하지 못했습니다.');
+    print(method + ' ' + path,
+      '호출 실패: ' + e.message + '\n\n' +
+      '확인할 점\n' +
+      ' 1. API_BASE 주소가 맞는지 (현재: ' + API_BASE + ')\n' +
+      ' 2. 백엔드에 CORS 설정이 배포되어 있는지\n' +
+      ' 3. Render 서비스가 Live 상태인지');
+  } finally {
+    buttons.forEach(b => b.disabled = false);
+  }
+}
+
+const actions = {
+  health:     () => run('GET', '/health'),
+  profile:    () => run('GET', '/api/profile'),
+  experience: () => run('GET', '/api/experience'),
+  education:  () => run('GET', '/api/education'),
+  notfound:   () => run('GET', '/api/experience/999')
+};
+
+buttons.forEach(b => b.addEventListener('click', () => {
+  if (!ready){
+    setState('err', '백엔드 주소가 아직 설정되지 않았습니다.');
+    print('설정 필요', '이 페이지 아래쪽 스크립트의 API_BASE 값을\n본인 Render 주소로 바꿔 주세요.');
+    return;
+  }
+  actions[b.dataset.call]();
+}));
+
+/* 페이지가 열리면 백엔드를 미리 깨워 둔다 — 첫 버튼 클릭의 대기를 줄인다 */
+if (!ready){
+  setState('err', '백엔드 주소가 설정되지 않았습니다. API_BASE 를 확인해 주세요.');
+} else {
+  const started = performance.now();
+  fetch(API_BASE + '/health', { headers: { 'Accept': 'application/json' } })
+    .then(r => r.ok
+      ? setState('ok', '백엔드가 연결되었습니다. (' + Math.round(performance.now() - started) + 'ms)')
+      : setState('err', '백엔드가 ' + r.status + ' 를 돌려주었습니다.'))
+    .catch(() => setState('err', '백엔드에 연결하지 못했습니다. 버튼을 눌러 다시 시도해 주세요.'));
+}
+})();
+</script>
+</body>
+</html>
