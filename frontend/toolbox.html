@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>생각을 실현하기 — 김태현</title>
+  <meta name="description" content="김태현이 생각을 코드와 도구로 옮기며 기록한 제작 과정.">
+  <meta name="theme-color" content="#194e58">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700&amp;family=Noto+Sans+KR:wght@400;500;600;700&amp;family=Noto+Serif+JP:wght@400;500;600&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body data-page="toolbox">
+<a class="skip-link" href="#main">본문으로 바로가기</a>
+<header class="site-header">
+  <nav class="site-nav" aria-label="주 메뉴">
+    <a href="index.html">나의 철학</a>
+    <a href="story.html">나의 이야기</a>
+    <a href="notes.html">나의 생각</a>
+    <a href="toolbox.html" aria-current="page">생각을 실현하기</a>
+  </nav>
+  <div class="lang-switch" role="group" aria-label="언어 선택">
+    <button type="button" data-lang="ko" aria-pressed="true">한국어</button>
+    <button type="button" data-lang="en" aria-pressed="false" disabled title="영문판 준비 중">영어</button>
+    <button type="button" data-lang="ja" aria-pressed="false" disabled title="일문판 준비 중">일본어</button>
+  </div>
+  <button type="button" class="nav-toggle" aria-label="메뉴 열기" aria-expanded="false">☰</button>
+</header>
+<main id="main" class="page-toolbox">
+  <header class="page-header">
+    <p class="eyebrow">아이디어에서 작은 실험으로</p>
+    <h1>생각을 실현하기</h1>
+    <p class="lead">떠오른 생각을 화면과 코드, 데이터 구조로 옮겨봅니다. 작동하는 부분과 아직 풀어야 할 문제를 함께 기록하며 다음 버전을 만듭니다.</p>
+  </header>
+  <div class="editor-note"><span class="section-label">만드는 과정</span><p>각 글에는 출발점, 시도한 방식, 현재 상태를 남깁니다. 공개할 자료가 준비되면 해당 글에 프로젝트 주소를 연결합니다.</p></div>
+  <section class="post-index" id="post-index" data-feed="toolbox" aria-labelledby="posts-title">
+    <div class="feed-heading">
+      <div>
+        <p class="section-label">도구 · 실험 · 오픈소스</p>
+        <h2 id="posts-title">만들고 확인한 기록</h2>
+      </div>
+      <a class="write-link" href="editor.html?section=toolbox">+ 새 글 작성</a>
+    </div>
+    
+    <ul class="post-list" data-post-list></ul>
+    <p class="empty" data-empty hidden>아직 이 분류의 글이 없습니다. 새 글을 작성해보세요.</p>
+  </section>
+  <section class="article-stage" data-article-stage aria-live="polite" hidden></section>
+</main>
+<footer class="site-footer">
+  <nav class="footer-pages" aria-label="페이지 바로가기">
+    <a href="index.html">나의 철학</a>
+    <a href="story.html">나의 이야기</a>
+    <a href="notes.html">나의 생각</a>
+    <a href="toolbox.html">생각을 실현하기</a>
+  </nav>
+  <p>v5.0 · © 2026 김태현</p>
+</footer>
+<script src="assets/posts.js" defer></script>
+<script src="assets/app.js" defer></script>
+</body>
+</html>
